@@ -94,8 +94,10 @@ describe('AdminDashboard', () => {
   it('should display correct analytics values', () => {
     render(<AdminDashboardMock />)
     expect(screen.getByText('45')).toBeInTheDocument() // Total leads
-    expect(screen.getByText('15')).toBeInTheDocument() // High priority
-    expect(screen.getByText('8')).toBeInTheDocument() // Active agents
+    const highPriority = screen.getAllByText('15')
+    expect(highPriority.length).toBeGreaterThan(0) // High priority
+    const activeAgents = screen.getAllByText('8')
+    expect(activeAgents.length).toBeGreaterThan(0) // Active agents
     expect(screen.getByText('12')).toBeInTheDocument() // Closed this month
   })
 

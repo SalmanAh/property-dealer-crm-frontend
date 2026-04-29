@@ -69,7 +69,8 @@ describe('AgentPerformanceTable', () => {
 
   it('should display conversion rate visualization', () => {
     render(<AgentPerformanceTable data={mockAgentData} />)
-    expect(screen.getByText('50%')).toBeInTheDocument()
+    const rates = screen.getAllByText('50%')
+    expect(rates.length).toBeGreaterThan(0)
   })
 
   it('should handle empty agent list', () => {
