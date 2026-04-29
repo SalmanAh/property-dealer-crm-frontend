@@ -1,29 +1,29 @@
 'use client';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
+
     try {
-      await login(email, password);
-      // Redirect handled by auth context
-      const user = JSON.parse(localStorage.getItem('propcrm_user') || '{}');
-      router.push(user.role === 'Admin' ? '/dashboard/admin' : '/dashboard/agent');
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/request-password-reset`, {
+        email,
+      });
+      setSuccess('If an account exists with this email, a password reset link has been sent. Please check your email.');
+      setEmail('');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || 'Failed to request password reset. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,8 @@ export default function LoginPage() {
               </div>
               <span className="text-3xl font-bold text-slate-900 tracking-tight">PropCRM</span>
             </div>
-            <h1 className="text-2xl font-semibold text-slate-800">Sign in to PropCRM</h1>
-            <p className="text-sm text-slate-500 mt-1">Enter your credentials to manage your properties</p>
+            <h1 className="text-2xl font-semibold text-slate-800">Reset Password</h1>
+            <p className="text-sm text-slate-500 mt-1">Enter your email to receive a password reset link</p>
           </div>
 
           {/* Error */}
@@ -57,6 +57,14 @@ export default function LoginPage() {
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">error</span>
               {error}
+            </div>
+          )}
+
+          {/* Success */}
+          {success && (
+            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm flex items-start gap-2">
+              <span className="material-symbols-outlined text-[18px] flex-shrink-0 mt-0.5">check_circle</span>
+              <span>{success}</span>
             </div>
           )}
 
@@ -82,55 +90,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-widest text-slate-500" htmlFor="password">
-                  Password
-                </label>
-                <Link href="/forgot-password" className="text-xs text-primary hover:underline font-semibold">
-                  Forgot?
-                </Link>
-              </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">lock</span>
-                </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-11 py-3 bg-slate-50 rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              id="login-submit-btn"
               className="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold text-base shadow-lg hover:bg-[#494bd6] active:scale-[0.98] transition-all duration-200 mt-2 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
+                  Sending...
                 </>
               ) : (
                 <>
-                  Sign In
-                  <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                  Send Reset Link
+                  <span className="material-symbols-outlined text-[20px]">mail</span>
                 </>
               )}
             </button>
@@ -138,8 +111,13 @@ export default function LoginPage() {
 
           {/* Footer */}
           <p className="text-center text-sm text-slate-400 mt-6">
-            Don&apos;t have an account?{' '}
-            <span className="text-primary font-semibold cursor-pointer hover:underline">Contact Admin</span>
+            Remember your password?{' '}
+            <span
+              onClick={() => router.push('/login')}
+              className="text-primary font-semibold cursor-pointer hover:underline"
+            >
+              Sign In
+            </span>
           </p>
         </div>
       </main>
